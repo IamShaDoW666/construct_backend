@@ -3,6 +3,8 @@ import cors from "cors";
 import dotenv from "dotenv";
 import apiRoutes from "./routes/apiRouter";
 import { sendSuccess } from "./utils/network";
+import morgan from "morgan";
+import path from "path";
 
 dotenv.config();
 const app = express();
@@ -11,10 +13,13 @@ const corsOptions = {
   origin: "*",
 };
 
+
+app.use(morgan("dev"));
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 app.get("/", (req, res) => {
   sendSuccess(res, {message: "API Online"});
 });

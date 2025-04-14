@@ -7,11 +7,30 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum ImageType {
+  LINK
+  UPLOAD
+}
+
 model User {
   id        String   @id @default(cuid())
   name      String?
   email     String   @unique
   password  String?
+  uploadedMedia Media[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Media {
+  id        String   @id @default(cuid())
+  title     String?
+  reference String @unique
+  description String?
+  url       String
+  type      ImageType
+  uploadedUserId    String
+  uploadedUser      User     @relation(fields: [uploadedUserId], references: [id])
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
