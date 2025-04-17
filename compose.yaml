@@ -8,4 +8,4 @@ services:
       - .env
     command: pnpm start
     volumes:
-      - uploads:/app/uploads
+      - ./uploads:/app/uploads
