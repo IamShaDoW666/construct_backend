@@ -7,3 +7,5 @@ services:
     env_file:
       - .env
     command: pnpm start
+    volumes:
+      - uploads:/app/uploads
