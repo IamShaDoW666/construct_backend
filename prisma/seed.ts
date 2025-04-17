@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import crypto from "crypto";
+import bcrypt from "bcryptjs";
 const prisma = new PrismaClient();
 
 async function main() {
@@ -12,6 +12,13 @@ async function main() {
     ],
   });
 
+  await prisma.user.create({
+    data: {
+      name: "Test User",
+      email: "test@test.com",
+      password: await bcrypt.hash("password", 10),
+    },
+  });
   console.log(`${users.count} users created.`);
 }
 

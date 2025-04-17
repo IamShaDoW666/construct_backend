@@ -21,6 +21,7 @@ RUN pnpx prisma generate
 
 # Build the TypeScript code
 RUN pnpm build
+RUN pnpm seed
 RUN ls -l /app
 
 
