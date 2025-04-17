@@ -1,10 +1,10 @@
 {
-  "name": "quickpay_backend",
+  "name": "construct_backend",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",  
+  "main": "index.js",
   "scripts": {
-    "start": "node dist/index.js",
+    "start": "node dist/src/index.js",
     "seed": "ts-node prisma/seed.ts",
     "build": "tsc",
     "dev": "ts-node-dev --respawn --transpile-only src/index.ts",

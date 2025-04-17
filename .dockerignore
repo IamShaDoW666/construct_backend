@@ -1,0 +1,5 @@
+prisma/dev.db
+node_modules
+Dockerfile
+compose.yaml
+dist

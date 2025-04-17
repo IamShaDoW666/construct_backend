@@ -1,0 +1,9 @@
+services:
+  api:
+    build: .
+    container_name: construct_api
+    ports:
+      - '3303:3303'
+    env_file:
+      - .env
+    command: pnpm start
