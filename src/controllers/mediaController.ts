@@ -51,10 +51,7 @@ const createBulkMedia = async (req: Request, res: Response) => {
   for (const file of files) {
     const compressedPath = path
       .join(
-        __dirname,
-        "..",
-        "..",
-        "uploads",
+        path.resolve(process.cwd(), "uploads"),
         `${Date.now()}-${file.originalname}`
       )
       .replace(/\s+/g, "");
@@ -160,6 +157,25 @@ const updateBulkMedia = async (req: Request, res: Response) => {
   }
 
   const files = req.files as Express.Multer.File[];
+  const results = [];
+
+  for (const file of files) {
+    const compressedPath = path
+      .join(
+        path.resolve(process.cwd(), "uploads"),
+        `${Date.now()}-${file.originalname}`
+      )
+      .replace(/\s+/g, "");
+    await sharp(file.buffer)
+      .resize({ width: 1024 })
+      .jpeg({ quality: 70 })
+      .toFile(compressedPath);
+    results.push({
+      file: file.originalname,
+      path: path.join("uploads", path.basename(compressedPath)),
+    });
+  }
+
   let ref = batch.reference;
   if (batch.reference !== req.body.reference) {
     ref = batch.reference?.slice(0, 7) + req.body.reference;
@@ -175,8 +191,8 @@ const updateBulkMedia = async (req: Request, res: Response) => {
       },
     });
 
-    const mediaData = files.map((file) => ({
-      title: file.filename,
+    const mediaData = results.map((file) => ({
+      title: file.file,
       type: ImageType.UPLOAD,
       reference: ref + Math.random().toString(36).slice(2, 5),
       url: file.path,
@@ -207,10 +223,7 @@ const createMedia = async (req: Request, res: Response) => {
 
   const compressedPath = path
     .join(
-      __dirname,
-      "..",
-      "..",
-      "uploads",
+      path.resolve(process.cwd(), "uploads"),
       `${Date.now()}-${req.file.originalname}`
     )
     .replace(/\s+/g, "");
