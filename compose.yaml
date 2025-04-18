@@ -9,3 +9,4 @@ services:
     command: pnpm start
     volumes:
       - ./uploads:/app/uploads
+      - ./prisma:/app/prisma
