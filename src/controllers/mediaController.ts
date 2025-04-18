@@ -5,6 +5,8 @@ import { ImageType } from "@prisma/client";
 import { createReference } from "../utils/common";
 import path from "path";
 import fs from "fs/promises";
+import sharp from "sharp";
+import { stringify } from "querystring";
 
 const getAllMedia = async (req: Request, res: Response) => {
   const media = await db.media.findMany({
@@ -44,6 +46,28 @@ const createBulkMedia = async (req: Request, res: Response) => {
   }
 
   const files = req.files as Express.Multer.File[];
+  const results = [];
+
+  for (const file of files) {
+    const compressedPath = path
+      .join(
+        __dirname,
+        "..",
+        "..",
+        "uploads",
+        `${Date.now()}-${file.originalname}`
+      )
+      .replace(/\s+/g, "");
+    await sharp(file.buffer)
+      .resize({ width: 1024 })
+      .jpeg({ quality: 70 })
+      .toFile(compressedPath);
+
+    results.push({
+      file: file.originalname,
+      path: path.join("uploads", path.basename(compressedPath)),
+    });
+  }
   const ref = createReference(req.body.reference);
 
   try {
@@ -59,8 +83,8 @@ const createBulkMedia = async (req: Request, res: Response) => {
       },
     });
 
-    const mediaData = files.map((file) => ({
-      title: file.filename,
+    const mediaData = results.map((file) => ({
+      title: file.file,
       type: ImageType.UPLOAD,
       reference: ref + Math.random().toString(36).slice(2, 5),
       url: file.path,
@@ -181,15 +205,33 @@ const createMedia = async (req: Request, res: Response) => {
     return;
   }
 
-  const { filename, mimetype, path } = req.file;
-
+  const compressedPath = path
+    .join(
+      __dirname,
+      "..",
+      "..",
+      "uploads",
+      `${Date.now()}-${req.file.originalname}`
+    )
+    .replace(/\s+/g, "");
+  try {
+    await sharp(req.file.buffer)
+      .resize({ width: 1024 })
+      .jpeg({ quality: 70 })
+      .toFile(compressedPath);
+  } catch (error) {
+    sendError(res, `Error compressing image: ${error}`, 500);
+    return;
+  }
+  const filename = path.basename(compressedPath);
+  const filepath = path.join("uploads", filename);
   try {
     const media = await db.media.create({
       data: {
         title: filename,
         type: "UPLOAD",
-        reference: filename + Date.now().toString(),
-        url: path,
+        reference: "REF" + Date.now().toString(),
+        url: filepath,
         batch: {
           connectOrCreate: {
             where: {

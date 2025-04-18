@@ -42,7 +42,7 @@ model Media {
   url            String
   type           ImageType
   batchId        String
-  batch          Batch     @relation(fields: [batchId], references: [id])
+  batch          Batch     @relation(fields: [batchId], references: [id], onDelete: Cascade)
   uploadedUserId String
   uploadedUser   User      @relation(fields: [uploadedUserId], references: [id])
   createdAt      DateTime  @default(now())
