@@ -13,6 +13,9 @@ const getAllBatch = async (req: Request, res: Response) => {
     include: {      
       media: true,
       createdBy: true
+    },
+    orderBy: {
+      createdAt: "desc",
     }
   });
 
