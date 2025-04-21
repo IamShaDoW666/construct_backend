@@ -1,6 +1,8 @@
 import db from "../utils/db";
 import { Response, Request } from "express";
 import { sendError, sendSuccess } from "../utils/network";
+import path from "path";
+import fs from "fs/promises";
 const getAllBatch = async (req: Request, res: Response) => {
   const batch = await db.batch.findMany({
     where: {
@@ -69,6 +71,34 @@ const createBatch = async (req: Request, res: Response) => {
 
 const deleteBatch = async (req: Request, res: Response) => {
   const { id } = req.params;
+  const batch = await db.batch.findUnique({
+    where: {
+      id: id,
+    },
+    include: {
+      media: true,
+    },
+  });
+  if (!batch) {
+    sendError(res, "Batch not found", 404);
+    return;
+  }
+
+  const deleteFilePromises = batch.media.map(async (media) => {
+    const filePath = path.resolve(media.url); // Adjust if 'filepath' includes full path
+    try {
+      await fs.unlink(filePath);
+      await db.media.delete({
+        where: {
+          id: media.id,
+        },
+      });
+    } catch (err) {
+      console.error(`Failed to delete file: ${filePath}`, err);
+      // Optionally handle specific errors, e.g., file not found
+    }
+  });
+  await Promise.all(deleteFilePromises);
   const response = await db.batch.delete({
     where: {
       id: id,
